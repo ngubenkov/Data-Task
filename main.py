@@ -19,12 +19,10 @@ def getInstalls():  # GET ALL INSTALLS PER DAY
     except (Exception, psycopg2.Error) as error:
         print("Error while connecting to PostgreSQL", error)
 
-def getPayments():
+def getPayments(firstDay,lastDay):
     try:
         cursor = connection.cursor()
-
-        data = inputs()
-        print(data)
+        data = inputs(firstDay,lastDay)
         cursor.execute("""select temp.dateLTV, temp.dattt, temp.suma/temp1.count as ltv from
                             (SELECT CAST(to_timestamp(payment."createTime") as date) as dateLTV,
                                   CAST(to_timestamp(player."createTime") as date) as dattt,
@@ -32,7 +30,7 @@ def getPayments():
                                   SUM(("currencyAmount" * CAST("clientData"->>'payout_foreign_exchange_rate' as FLOAT))::NUMERIC)
                             FROM payment
                             inner join player on payment."playerId" = player.id
-                             WHERE (player."createTime" >= extract(epoch from (%s) at time zone 'utc') and player."createTime" <= extract(epoch from (%s) at time zone 'utc') and
+                             WHERE (
                                    payment."createTime" >= extract(epoch from (%s) at time zone 'utc') and payment."createTime" <= extract(epoch from (%s) at time zone 'utc') )
                           
                              group by  dateLTV, CAST(to_timestamp(player."createTime") as date)
@@ -53,26 +51,17 @@ def getPayments():
     except (Exception, psycopg2.Error) as error:
         print("Error while connecting to PostgreSQL", error)
 
-def inputs():
-    inputPlayerFirstDay = input('Enter first date of regesitered Users(or leave it empty to get from first record):')
-    inputPlayerLastDay = input('Enter last date of regesitered Users(or leave it empty to get from last record):')
-
+def inputs(firstDay,lastDay):
     inputPaymentFirstDay = input('Enter first date of payment (or leave it empty to get from first record):')
     inputPaymentLastDay = input('Enter last date of payment (or leave it empty to get from last record):')
 
-    if inputPlayerFirstDay == '':
-        inputPlayerFirstDay = datetime.date(firstDay)
-
-    if inputPlayerLastDay == '':
-        inputPlayerLastDay = datetime.date(lastDay)
-
     if inputPaymentFirstDay == '':
-        inputPaymentFirstDay = datetime.date(firstDay)
+        inputPaymentFirstDay = pd.to_datetime(firstDay).date()
 
     if inputPaymentLastDay == '':
-        inputPaymentLastDay = datetime.date(lastDay)
+        inputPaymentLastDay = pd.to_datetime(lastDay).date()
 
-    return (inputPlayerFirstDay, inputPlayerLastDay, inputPaymentFirstDay, inputPaymentLastDay)
+    return(inputPaymentFirstDay, inputPaymentLastDay)
 
 if __name__ == "__main__":
 
@@ -83,7 +72,6 @@ if __name__ == "__main__":
     listOfDays = pd.to_datetime(dateInstalls[0]).unique()
     firstDay = listOfDays[0]
     lastDay = listOfDays[-1]
-
 
     dateInstalls.columns = ['Date','Installs']
     dateInstalls['LTV'] = 0
@@ -96,9 +84,7 @@ if __name__ == "__main__":
         dateInstalls['LTV' + str(i)] = None
         dateInstalls['LTV' + str(i)] = dateInstalls['LTV' + str(i)].astype(float)
 
-    #df = getPayments(inputPlayerFirstDay, inputPlayerLastDay, inputPaymentFirstDay, inputPaymentLastDay)
-
-    df = getPayments()
+    df = getPayments(firstDay,lastDay)
 
     # convert to datetime
     df[0] = pd.to_datetime(df[0])
@@ -158,6 +144,5 @@ if __name__ == "__main__":
                         dateInstalls.set_value(temp, 'LTV', Decimal(val))
 
                     ind = ind + 1
-
 
         dateInstalls.to_csv('result.csv') # build table

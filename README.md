@@ -1,51 +1,23 @@
-# volka
+# 
 Task
 You need to prepare a report showing the growth of daily cohort LTV of players (Report description).
+
 You should use PostgreSQL database, tables:
+
 player  - players’ data
 payment – payments’ data
 Access to test database:
-postgresql://observer:koh7theozoh8ohCh@5.79.73.74:5532/example 
+
+
 You need to create a script on R or Python which connects to the database, executes the SQL-query and then completes processing of received data. Final table is saved in a file.
 Do not download the database. Initial filtering and grouping should be done in SQL.
 Optionally complete additional tasks.
-We are waiting for the result in archive (script and instruction to launch it) on jobs@volkagames.com
+We are waiting for the result in archive (script and instruction to launch it) on
 
 Report description
 A game designer needs to understand what is the value of the users who started to play on certain dates. 
 He wants to insert a range of registration dates in the query to get a table like this:
-Date
-Installs
-LTV
-LTV-1
-LTV-2
-LTV-3
-LTV-4
-1 of May
-1000
-0.4$
-0.1$
-0.2$
-0.3$
-0.4$
-2 of May
-1200
-0.02$
-0.01$
-0.01$
-0.02$
 
-
-3 of May
-800
-1.0$
-0.8$
-1.0$
-
-
-
-
-(Imagine today is a 5th of May)
 
 The table shows the growth of LTV (LifeTime Value) of players who registered on a particular day - that is, how much the game has earned on average from each install on that day, and how this value changes over time. This allows to evaluate how successfully players convert into paying users - for example, in this case, on May 2, something obviously went wrong (small and slowly growing LTV), but on May 3 there was some successful solution (high and growing rapidly LTV).
 Date – Registration date of the cohort of users;
